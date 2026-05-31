@@ -411,3 +411,161 @@ void update(int value)
     glutPostRedisplay();
     glutTimerFunc(20, update, 0);
 }
+
+void timer(int value)
+{
+    if (gameStarted && !showHighScore && !paused && !gameOver)
+    {
+        timeLeft--;
+
+        if (bigBasketTime > 0)
+        {
+            bigBasketTime--;
+
+            if (bigBasketTime == 0)
+                basketWidth = normalBasketWidth;
+        }
+
+        if (slowTime > 0)
+        {
+            slowTime--;
+
+            if (slowTime == 0)
+                objSpeed = normalObjSpeed;
+        }
+
+        if (timeLeft <= 0)
+        {
+            gameOver = true;
+
+            if (score > highScore)
+                highScore = score;
+        }
+    }
+
+    glutTimerFunc(1000, timer, 0);
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+    if (key == 27)
+        exit(0);
+
+    if (key == 'm' || key == 'M')
+    {
+        gameStarted = false;
+        showHighScore = false;
+        paused = false;
+        return;
+    }
+
+    if (key == 'h' || key == 'H')
+    {
+        showHighScore = true;
+        gameStarted = false;
+        return;
+    }
+
+    if (key == 's' || key == 'S')
+    {
+        resetGame();
+        return;
+    }
+
+    if (key == 'p' || key == 'P')
+    {
+        if (gameStarted && !gameOver)
+            paused = true;
+        return;
+    }
+
+    if (key == 'r' || key == 'R')
+    {
+        if (gameStarted && !gameOver)
+            paused = false;
+        return;
+    }
+
+    if (!gameStarted || paused || gameOver || showHighScore)
+        return;
+
+    if (key == 'a' || key == 'A')
+        basketX -= 25;
+
+    if (key == 'd' || key == 'D')
+        basketX += 25;
+
+    if (basketX < 0)
+        basketX = 0;
+
+    if (basketX + basketWidth > windowWidth)
+        basketX = windowWidth - basketWidth;
+}
+
+void specialKey(int key, int x, int y)
+{
+    if (!gameStarted || paused || gameOver || showHighScore)
+        return;
+
+    if (key == GLUT_KEY_LEFT)
+        basketX -= 25;
+
+    if (key == GLUT_KEY_RIGHT)
+        basketX += 25;
+
+    if (basketX < 0)
+        basketX = 0;
+
+    if (basketX + basketWidth > windowWidth)
+        basketX = windowWidth - basketWidth;
+}
+
+void mouseMove(int x, int y)
+{
+    if (!gameStarted || paused || gameOver || showHighScore)
+        return;
+
+    basketX = x - basketWidth / 2;
+
+    if (basketX < 0)
+        basketX = 0;
+
+    if (basketX + basketWidth > windowWidth)
+        basketX = windowWidth - basketWidth;
+}
+
+void init()
+{
+    glClearColor(0.50, 0.80, 1.0, 1.0);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    gluOrtho2D(0, windowWidth, 0, windowHeight);
+}
+
+int main(int argc, char** argv)
+{
+    srand(time(0));
+
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(windowWidth, windowHeight);
+    glutInitWindowPosition(50, 30);
+    glutCreateWindow("Catch The Eggs");
+
+    init();
+    resetObject();
+
+    glutDisplayFunc(display);
+    glutKeyboardFunc(keyboard);
+    glutSpecialFunc(specialKey);
+    glutPassiveMotionFunc(mouseMove);
+
+    glutTimerFunc(20, update, 0);
+    glutTimerFunc(1000, timer, 0);
+
+    glutMainLoop();
+
+    return 0;
+}
