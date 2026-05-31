@@ -297,3 +297,117 @@ void checkCatch()
         resetObject();
     }
 }
+void drawMenu()
+{
+    drawBackground();
+
+    glColor3f(1, 1, 1);
+    drawBoldText(395, 560, "CATCH THE EGGS");
+
+    glColor3f(0, 0, 0);
+    drawBoldText(390, 480, "Press S : Start Game");
+    drawBoldText(390, 440, "Press H : High Score");
+    drawBoldText(390, 400, "Press ESC : Exit");
+
+    drawText(350, 330, "Controls: A/D, Arrow Keys, or Mouse Move");
+    drawText(395, 310, "P = Pause | R = Resume | M = Menu");
+}
+
+void drawHighScorePage()
+{
+    drawBackground();
+
+    glColor3f(1, 1, 1);
+    drawBoldText(410, 520, "HIGH SCORE");
+
+    glColor3f(0, 0, 0);
+    drawBoldText(430, 460, "Best Score: " + to_string(highScore));
+    drawText(410, 400, "Press M to go back to Menu");
+    drawText(410, 375, "Press S to Start Game");
+}
+
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    if (!gameStarted && !showHighScore)
+    {
+        drawMenu();
+        glFlush();
+        return;
+    }
+
+    if (showHighScore)
+    {
+        drawHighScorePage();
+        glFlush();
+        return;
+    }
+
+    drawBackground();
+    drawBambooStick();
+    drawChicken();
+    drawBasket();
+    drawObject();
+
+    glColor3f(1, 1, 1);
+    drawBoldText(20, 660, "Score: " + to_string(score));
+    drawBoldText(850, 660, "Time: " + formatTime(timeLeft));
+
+    glColor3f(0, 0, 0);
+    drawText(20, 630, "Normal Egg +1 | Blue +5 | Golden +10 | Poop -10");
+    drawText(20, 610, "B = Big Basket | S = Slow Egg | T = Extra Time");
+
+    if (slowTime > 0)
+    {
+        glColor3f(0, 0, 1);
+        drawBoldText(430, 660, "SLOW: " + to_string(slowTime));
+    }
+
+    if (bigBasketTime > 0)
+    {
+        glColor3f(0.5, 0, 0.7);
+        drawBoldText(430, 635, "BIG: " + to_string(bigBasketTime));
+    }
+
+    if (paused)
+    {
+        glColor3f(1, 0, 0);
+        drawBoldText(455, 360, "PAUSED");
+        drawText(410, 330, "Press R to Resume | M for Menu");
+    }
+
+    if (gameOver)
+    {
+        glColor3f(1, 0, 0);
+        drawBoldText(430, 390, "GAME OVER");
+        drawBoldText(405, 360, "Final Score: " + to_string(score));
+        drawBoldText(405, 330, "High Score: " + to_string(highScore));
+
+        glColor3f(0, 0, 0);
+        drawText(390, 295, "Press S to Restart | H for High Score | ESC to Exit");
+    }
+
+    glFlush();
+}
+
+void update(int value)
+{
+    if (gameStarted && !showHighScore && !paused && !gameOver)
+    {
+        chickenX += chickenSpeed;
+
+        if (chickenX > windowWidth - 60 || chickenX < 60)
+            chickenSpeed = -chickenSpeed;
+
+        objY -= objSpeed;
+
+        checkCatch();
+
+        if (objY < 0)
+            resetObject();
+    }
+
+    glutPostRedisplay();
+    glutTimerFunc(20, update, 0);
+}
